@@ -1,0 +1,11 @@
+name: mpc
+channels:
+  - conda-forge
+dependencies:
+  - python=3.13
+  - numpy
+  - matplotlib
+  - gymnasium
+  - jax
+  - pygame
+  - casadi
