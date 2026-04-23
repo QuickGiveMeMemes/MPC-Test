@@ -1,4 +1,4 @@
-from cartpole_mod import CartPoleEnv
+from cartpole_env import CartPoleEnv
 import casadi as ca
 import numpy as np
 from gymnasium.utils.play import play
@@ -78,11 +78,11 @@ def setup_mpc(x0):
     for i in range(n):
         x = apply_dynamics(x, u[i])
 
-        J += x[2] ** 2 + x[0]**2
+        J += ca.fmod(x[2], ca.pi * 2 )** 2 + x[0]**2 
 
         # J += x[3]**2
         opti.subject_to(opti.bounded(-x_threshold, x[0], x_threshold))
-        opti.subject_to(opti.bounded(-10, u[i], 10))
+        opti.subject_to(opti.bounded(-FORCE, u[i], FORCE))
 
     opti.minimize(J)
 
@@ -112,7 +112,8 @@ ipopt_settings = {
 }
 opti.solver("ipopt", ipopt_settings)
 
-opti.set_value(x0, ca.vertcat(0, 0, ca.pi, 0))
+observation, reward, terminated, truncated, info = env.step(0)
+opti.set_value(x0, observation)
 
 while True:
     # print(f"Solving with {opti.nx} variables.")
@@ -129,7 +130,7 @@ while True:
     #     observation, reward, terminated, truncated, info = env.step(1 if f > 0 else 0)
 
 
-    observation, reward, terminated, truncated, info = env.step(float(force))
+    observation, reward, terminated, truncated, info = env.step(np.clip(force, -FORCE, FORCE))
 
     opti.set_value(x0, ca.vertcat(*observation))
 
