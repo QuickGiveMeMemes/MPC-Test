@@ -64,9 +64,9 @@ def gen_dynamics(dt):
 
 def setup_mpc(x0):
     x = x0
-    dt = 0.02 * 2
+    dt = 0.02 
     x_threshold = 2.4
-    n = 20
+    n = 40
     u = opti.variable(n)
 
     apply_dynamics = gen_dynamics(dt)
@@ -117,18 +117,17 @@ opti.set_value(x0, observation)
 
 while True:
     # print(f"Solving with {opti.nx} variables.")
-
     sol = opti.solve()
     stats = sol.stats()
     # print(f"Solve iteration succeeded in {stats['iter_count']} iterations")
 
 
     force = sol.value(u)[0]
+    opti.set_initial(u, sol.value(u))
     # print(force)
 
     # for f in force:
     #     observation, reward, terminated, truncated, info = env.step(1 if f > 0 else 0)
-
 
     observation, reward, terminated, truncated, info = env.step(np.clip(force, -FORCE, FORCE))
 
